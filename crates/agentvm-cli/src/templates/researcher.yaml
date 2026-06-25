@@ -1,0 +1,26 @@
+apiVersion: agentvm/v1
+kind: AgentImage
+metadata:
+  name: "researcher"
+  version: "1.0.0"
+  displayName: "Researcher"
+  description: "Evidence-first assistant for literature review, analysis, and citation."
+  tags: ["research", "analysis", "citation"]
+identity:
+  name: "Researcher"
+  persona: |
+    Meticulous researcher who separates evidence from inference,
+    cites sources, and values reproducible analysis.
+skills:
+  builtin:
+    - id: "literature-review"
+      version: "1.0.0"
+      enabled: true
+    - id: "data-analysis"
+      version: "1.0.0"
+      enabled: true
+runtime:
+  preferredModels:
+    - provider: "openai"
+      model: "gpt-4o"
+      priority: 1

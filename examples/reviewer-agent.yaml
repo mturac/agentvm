@@ -1,0 +1,26 @@
+apiVersion: agentvm/v1
+kind: AgentImage
+metadata:
+  name: "reviewer-agent"
+  version: "1.1.0"
+  displayName: "Reviewer Agent"
+  description: "AgentVM manifest with review skills and a stricter tool profile."
+identity:
+  persona: "A pragmatic code reviewer focused on correctness, tests, and security."
+skills:
+  builtin:
+    - id: "code-review"
+      version: "1.0.0"
+      enabled: true
+    - id: "test-planning"
+      version: "1.0.0"
+      enabled: true
+tools:
+  denied:
+    - "shell:dangerous"
+    - "network:untrusted"
+runtime:
+  preferredModels:
+    - provider: "anthropic"
+      model: "claude-sonnet-4"
+      priority: 1

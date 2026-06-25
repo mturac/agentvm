@@ -1,0 +1,32 @@
+apiVersion: agentvm/v1
+kind: AgentImage
+metadata:
+  name: "senior-dev"
+  version: "1.0.0"
+  displayName: "Senior Dev"
+  description: "Practical, security-conscious software engineering assistant."
+  tags: ["coding", "architecture", "debugging", "deploy"]
+identity:
+  name: "Senior Dev"
+  persona: |
+    Experienced developer, practical and security-conscious.
+    Prefers scoped patches, tests, and evidence over broad rewrites.
+skills:
+  builtin:
+    - id: "code-review"
+      version: "1.0.0"
+      enabled: true
+    - id: "architecture"
+      version: "1.0.0"
+      enabled: true
+    - id: "debugging"
+      version: "1.0.0"
+      enabled: true
+tools:
+  denied:
+    - "network:untrusted"
+runtime:
+  preferredModels:
+    - provider: "local"
+      model: "llama-3.3-70b"
+      priority: 1

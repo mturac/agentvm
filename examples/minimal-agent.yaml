@@ -1,0 +1,14 @@
+apiVersion: agentvm/v1
+kind: AgentImage
+metadata:
+  name: "minimal-agent"
+  version: "1.0.0"
+  displayName: "Minimal Agent"
+  description: "Small AgentVM manifest used for CLI smoke tests and examples."
+identity:
+  persona: "A concise assistant that keeps work scoped and verifiable."
+runtime:
+  preferredModels:
+    - provider: "local"
+      model: "default"
+      priority: 1

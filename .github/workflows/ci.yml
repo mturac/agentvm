@@ -1,0 +1,185 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Install Go for registry smoke
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Test
+        run: cargo test --workspace
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: CLI smoke
+        run: cargo run -p agentvm-cli -- validate examples/minimal-agent.yaml
+
+      - name: CLI package smoke
+        run: |
+          cargo run -p agentvm-cli -- init /tmp/agentvm-smoke --template senior-dev --force
+          cargo run -p agentvm-cli -- pack /tmp/agentvm-smoke --output /tmp/agentvm-smoke.agentvm
+          cargo run -p agentvm-cli -- unpack /tmp/agentvm-smoke.agentvm --output /tmp/agentvm-restored
+          cargo run -p agentvm-cli -- memory search /tmp/agentvm-smoke tests
+          cargo run -p agentvm-cli -- run /tmp/agentvm-smoke --dry-run --platform ollama --prompt "Summarize memory"
+          cargo run -p agentvm-cli -- checksum examples/minimal-agent.yaml
+          cargo run -p agentvm-cli -- merge examples/minimal-agent.yaml examples/reviewer-agent.yaml --output /tmp/agentvm-merged.yaml
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-merged.yaml
+          cargo run -p agentvm-cli -- export examples/reviewer-agent.yaml --to openclaw --output /tmp/agentvm-openclaw-export
+          cargo run -p agentvm-cli -- import openclaw --workspace /tmp/agentvm-openclaw-export --output /tmp/agentvm-openclaw-import --force
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-openclaw-import/agent.yaml
+          cargo run -p agentvm-cli -- skills list /tmp/agentvm-smoke
+          cargo run -p agentvm-cli -- skills add /tmp/agentvm-smoke registry://skills/github-advanced --version 3.1.0
+          cargo run -p agentvm-cli -- skills remove /tmp/agentvm-smoke github-advanced
+          cargo run -p agentvm-cli -- version bump /tmp/agentvm-smoke patch --message "Smoke version bump"
+          cargo run -p agentvm-cli -- changelog /tmp/agentvm-smoke
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-smoke/agent.yaml
+
+      - name: CLI registry smoke
+        run: |
+          (cd registry && AGENTVM_REGISTRY_ADDR=127.0.0.1:8787 AGENTVM_REGISTRY_DATA=/tmp/agentvm-registry-ci.json go run .) &
+          REGISTRY_PID=$!
+          trap "kill $REGISTRY_PID" EXIT
+          sleep 2
+          python3 - <<'PY'
+          import json
+          import urllib.error
+          import urllib.request
+
+          base = "http://127.0.0.1:8787"
+
+          def options(origin):
+              req = urllib.request.Request(
+                  base + "/v1/images",
+                  method="OPTIONS",
+                  headers={
+                      "Origin": origin,
+                      "Access-Control-Request-Method": "POST",
+                  },
+              )
+              with urllib.request.urlopen(req) as res:
+                  return res.status, res.headers.get("Access-Control-Allow-Origin")
+
+          assert options("http://127.0.0.1:5173") == (204, "http://127.0.0.1:5173")
+          assert options("https://example.com") == (204, None)
+
+          bad = json.dumps({
+              "owner": "ci",
+              "name": "bad",
+              "version": "1.0.0",
+              "files": {"../escape.txt": "nope"},
+          }).encode()
+          req = urllib.request.Request(
+              base + "/v1/images",
+              data=bad,
+              method="POST",
+              headers={"Content-Type": "application/json"},
+          )
+          try:
+              urllib.request.urlopen(req)
+          except urllib.error.HTTPError as err:
+              assert err.code == 400
+          else:
+              raise AssertionError("unsafe registry payload was accepted")
+          PY
+          cargo run -p agentvm-cli -- registry push /tmp/agentvm-smoke --owner local --url http://127.0.0.1:8787
+          cargo run -p agentvm-cli -- registry list --url http://127.0.0.1:8787
+          cargo run -p agentvm-cli -- registry search senior --url http://127.0.0.1:8787
+          cargo run -p agentvm-cli -- registry pull local/senior-dev:1.0.1 --output /tmp/agentvm-registry-pull.json --url http://127.0.0.1:8787
+          test -s /tmp/agentvm-registry-pull.json
+          cargo run -p agentvm-cli -- unpack /tmp/agentvm-registry-pull.json --output /tmp/agentvm-registry-restored
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-registry-restored/agent.yaml
+
+  web:
+    name: Web Studio
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: registry/web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: registry/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install browser for Studio smoke
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Browser smoke
+        run: npm run smoke
+
+  adapters:
+    name: Platform Adapters
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: adapters
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: adapters/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+  registry:
+    name: Registry API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: registry
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Test
+        run: go test ./...
+
+      - name: Persistent store smoke
+        run: go test ./storage -run TestFileStore

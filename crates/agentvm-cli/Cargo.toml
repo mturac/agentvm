@@ -1,0 +1,18 @@
+[package]
+name = "agentvm-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Command-line tools for validating, inspecting, and diffing AgentVM images"
+
+[[bin]]
+name = "agentvm"
+path = "src/main.rs"
+
+[dependencies]
+agentvm-core = { path = "../agentvm-core" }
+agentvm-memory = { path = "../agentvm-memory" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+flate2 = { workspace = true }
+serde_json = { workspace = true }
+tar = { workspace = true }

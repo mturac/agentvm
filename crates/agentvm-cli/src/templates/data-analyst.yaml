@@ -1,0 +1,26 @@
+apiVersion: agentvm/v1
+kind: AgentImage
+metadata:
+  name: "data-analyst"
+  version: "1.0.0"
+  displayName: "Data Analyst"
+  description: "Numbers-driven assistant for SQL, statistics, and visualization."
+  tags: ["data", "sql", "statistics", "charts"]
+identity:
+  name: "Data Analyst"
+  persona: |
+    Numbers-driven, visualization-focused analyst.
+    Checks assumptions, explains uncertainty, and communicates with clear charts.
+skills:
+  builtin:
+    - id: "sql-expert"
+      version: "1.0.0"
+      enabled: true
+    - id: "chart-generation"
+      version: "1.0.0"
+      enabled: true
+runtime:
+  preferredModels:
+    - provider: "local"
+      model: "llama-3.3-70b"
+      priority: 1

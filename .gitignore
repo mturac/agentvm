@@ -1,0 +1,9 @@
+/target/
+/.cache/
+/registry/web/dist/
+/registry/web/node_modules/
+/adapters/dist/
+/adapters/node_modules/
+*.agentvm
+*.log
+.DS_Store

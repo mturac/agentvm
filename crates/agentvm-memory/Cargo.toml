@@ -1,0 +1,11 @@
+[package]
+name = "agentvm-memory"
+version = "0.1.0"
+edition = "2021"
+description = "Local memory loading, recall, consolidation, and export for AgentVM images"
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
