@@ -80,13 +80,23 @@ jobs:
           (cd registry && AGENTVM_REGISTRY_ADDR=127.0.0.1:8787 AGENTVM_REGISTRY_DATA=/tmp/agentvm-registry-ci.json go run .) &
           REGISTRY_PID=$!
           trap "kill $REGISTRY_PID" EXIT
-          sleep 2
           python3 - <<'PY'
           import json
+          import time
           import urllib.error
           import urllib.request
 
           base = "http://127.0.0.1:8787"
+
+          for _ in range(50):
+              try:
+                  with urllib.request.urlopen(base + "/v1/health", timeout=0.2) as res:
+                      if res.status == 200:
+                          break
+              except OSError:
+                  time.sleep(0.1)
+          else:
+              raise SystemExit("registry did not become ready")
 
           def options(origin):
               req = urllib.request.Request(
