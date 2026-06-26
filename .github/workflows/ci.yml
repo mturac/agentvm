@@ -77,7 +77,8 @@ jobs:
 
       - name: CLI registry smoke
         run: |
-          (cd registry && AGENTVM_REGISTRY_ADDR=127.0.0.1:8787 AGENTVM_REGISTRY_DATA=/tmp/agentvm-registry-ci.json go run .) &
+          (cd registry && go build -o /tmp/agentvm-registry-ci .)
+          AGENTVM_REGISTRY_ADDR=127.0.0.1:8787 AGENTVM_REGISTRY_DATA=/tmp/agentvm-registry-ci.json /tmp/agentvm-registry-ci &
           REGISTRY_PID=$!
           trap "kill $REGISTRY_PID" EXIT
           python3 - <<'PY'
