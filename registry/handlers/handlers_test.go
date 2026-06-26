@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/agentvm/agentvm/registry/storage"
+	"github.com/mturac/agentvm/registry/storage"
 )
 
 func TestHealthAndTemplates(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/agentvm/agentvm/registry/models"
+	"github.com/mturac/agentvm/registry/models"
 )
 
 func TestFileStorePersistsImagesAndSkills(t *testing.T) {

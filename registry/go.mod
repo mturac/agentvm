@@ -1,3 +1,3 @@
-module github.com/agentvm/agentvm/registry
+module github.com/mturac/agentvm/registry
 
 go 1.23

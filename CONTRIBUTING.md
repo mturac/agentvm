@@ -32,7 +32,7 @@ Thanks for your interest in contributing! AgentVM is a community-driven project,
 1. Star the repo ⭐
 2. Read the [specification](spec.md)
 3. Check the current implemented surface before choosing work
-4. Pick a [`good-first-issue`](https://github.com/agentvm/agentvm/labels/good-first-issue)
+4. Pick a [`good-first-issue`](https://github.com/mturac/agentvm/labels/good-first-issue)
 5. Ask questions in GitHub Discussions
 
 ---
@@ -41,7 +41,7 @@ Thanks for your interest in contributing! AgentVM is a community-driven project,
 
 ```bash
 # Clone
-git clone https://github.com/agentvm/agentvm.git
+git clone https://github.com/mturac/agentvm.git
 cd agentvm
 
 # Check the Rust workspace
@@ -72,6 +72,7 @@ cargo run -p agentvm-cli -- merge examples/minimal-agent.yaml examples/reviewer-
 cd registry/web
 npm install
 npm run build
+npm run smoke
 
 # Build platform adapters
 cd ../../adapters
@@ -115,10 +116,10 @@ Planned surfaces in the roadmap include richer runtime execution, deeper exporte
 
 | Type | Where to Look |
 |------|--------------|
-| **First contribution** | [`good-first-issue`](https://github.com/agentvm/agentvm/labels/good-first-issue) |
-| **Bug fix** | [`bug`](https://github.com/agentvm/agentvm/labels/bug) |
-| **New feature** | [`enhancement`](https://github.com/agentvm/agentvm/labels/enhancement) |
-| **Documentation** | [`documentation`](https://github.com/agentvm/agentvm/labels/documentation) |
+| **First contribution** | [`good-first-issue`](https://github.com/mturac/agentvm/labels/good-first-issue) |
+| **Bug fix** | [`bug`](https://github.com/mturac/agentvm/labels/bug) |
+| **New feature** | [`enhancement`](https://github.com/mturac/agentvm/labels/enhancement) |
+| **Documentation** | [`documentation`](https://github.com/mturac/agentvm/labels/documentation) |
 | **Spec change** | Open an RFC first |
 
 ### 2. Claim the Issue
@@ -133,7 +134,7 @@ Planned surfaces in the roadmap include richer runtime execution, deeper exporte
 # Fork on GitHub, then:
 git clone https://github.com/YOUR-USERNAME/agentvm.git
 cd agentvm
-git remote add upstream https://github.com/agentvm/agentvm.git
+git remote add upstream https://github.com/mturac/agentvm.git
 
 # Create a branch
 git checkout -b feat/your-feature-name
@@ -530,7 +531,7 @@ Significant contributors may be recognized in release notes and invited to help 
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/agentvm/agentvm/discussions). We're happy to help!
+Open a [GitHub Discussion](https://github.com/mturac/agentvm/discussions). We're happy to help!
 
 ---
 

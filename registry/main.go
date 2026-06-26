@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/agentvm/agentvm/registry/handlers"
-	"github.com/agentvm/agentvm/registry/storage"
+	"github.com/mturac/agentvm/registry/handlers"
+	"github.com/mturac/agentvm/registry/storage"
 )
 
 func main() {

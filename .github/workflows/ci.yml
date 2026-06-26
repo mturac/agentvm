@@ -39,6 +39,13 @@ jobs:
       - name: CLI package smoke
         run: |
           cargo run -p agentvm-cli -- init /tmp/agentvm-smoke --template senior-dev --force
+          cargo run -p agentvm-cli -- security scan /tmp/agentvm-smoke --strict
+          cargo run -p agentvm-cli -- init /tmp/agentvm-secret-scan --template senior-dev --force
+          printf '# Episodic Memory\n\napi_key: sk-test-secret-token-value\n' > /tmp/agentvm-secret-scan/memory/episodic.md
+          if cargo run -p agentvm-cli -- security scan /tmp/agentvm-secret-scan --strict; then
+            echo "expected strict security scan to fail for secret-like fixture" >&2
+            exit 1
+          fi
           cargo run -p agentvm-cli -- pack /tmp/agentvm-smoke --output /tmp/agentvm-smoke.agentvm
           cargo run -p agentvm-cli -- unpack /tmp/agentvm-smoke.agentvm --output /tmp/agentvm-restored
           cargo run -p agentvm-cli -- memory search /tmp/agentvm-smoke tests
@@ -49,6 +56,18 @@ jobs:
           cargo run -p agentvm-cli -- export examples/reviewer-agent.yaml --to openclaw --output /tmp/agentvm-openclaw-export
           cargo run -p agentvm-cli -- import openclaw --workspace /tmp/agentvm-openclaw-export --output /tmp/agentvm-openclaw-import --force
           cargo run -p agentvm-cli -- validate /tmp/agentvm-openclaw-import/agent.yaml
+          cargo run -p agentvm-cli -- export examples/reviewer-agent.yaml --to chatgpt --output /tmp/agentvm-chatgpt-export
+          cargo run -p agentvm-cli -- import chatgpt --workspace /tmp/agentvm-chatgpt-export --output /tmp/agentvm-chatgpt-import --force
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-chatgpt-import/agent.yaml
+          cargo run -p agentvm-cli -- export examples/reviewer-agent.yaml --to claude --output /tmp/agentvm-claude-export
+          cargo run -p agentvm-cli -- import claude --workspace /tmp/agentvm-claude-export --output /tmp/agentvm-claude-import --force
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-claude-import/agent.yaml
+          cargo run -p agentvm-cli -- export examples/reviewer-agent.yaml --to gemini --output /tmp/agentvm-gemini-export
+          cargo run -p agentvm-cli -- import gemini --workspace /tmp/agentvm-gemini-export --output /tmp/agentvm-gemini-import --force
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-gemini-import/agent.yaml
+          cargo run -p agentvm-cli -- export examples/reviewer-agent.yaml --to ollama --output /tmp/agentvm-ollama-export
+          cargo run -p agentvm-cli -- import ollama --workspace /tmp/agentvm-ollama-export --output /tmp/agentvm-ollama-import --force
+          cargo run -p agentvm-cli -- validate /tmp/agentvm-ollama-import/agent.yaml
           cargo run -p agentvm-cli -- skills list /tmp/agentvm-smoke
           cargo run -p agentvm-cli -- skills add /tmp/agentvm-smoke registry://skills/github-advanced --version 3.1.0
           cargo run -p agentvm-cli -- skills remove /tmp/agentvm-smoke github-advanced

@@ -1512,7 +1512,7 @@ access:
 
 ```bash
 # Clone
-git clone https://github.com/agentvm/agentvm.git
+git clone https://github.com/mturac/agentvm.git
 cd agentvm
 
 # Build
@@ -1712,4 +1712,4 @@ runtime:
 
 *Spec v0.1.0 — Draft. Subject to change based on community feedback.*
 
-*Join the discussion: github.com/agentvm/agentvm/discussions*
+*Join the discussion: github.com/mturac/agentvm/discussions*

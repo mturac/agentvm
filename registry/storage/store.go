@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/agentvm/agentvm/registry/models"
+	"github.com/mturac/agentvm/registry/models"
 )
 
 var ErrNotFound = errors.New("not found")

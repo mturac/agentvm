@@ -416,6 +416,27 @@ function App() {
     setPackageState(2);
   }
 
+  function createPackageFile(path: string, content: string) {
+    const normalized = normalizePackageFilePath(path);
+    if (!normalized) return null;
+    setPackageFiles((current) => {
+      if (current[normalized] !== undefined) return current;
+      return { ...current, [normalized]: content };
+    });
+    setPackageState(2);
+    return normalized;
+  }
+
+  function deletePackageFile(path: string) {
+    setPackageFiles((current) => {
+      if (current[path] === undefined || Object.keys(current).length <= 1) return current;
+      const next = { ...current };
+      delete next[path];
+      return next;
+    });
+    setPackageState(2);
+  }
+
   function resetMemoryFiles() {
     setPackageFiles(buildDefaultPackageFiles());
     setPackageState(2);
@@ -590,6 +611,8 @@ function App() {
                 activeTab={activeTab}
                 files={packageFiles}
                 onFileChange={updatePackageFile}
+                onFileCreate={createPackageFile}
+                onFileDelete={deletePackageFile}
                 onReset={resetMemoryFiles}
               />
             ) : isExportTab(activeTab) ? (
@@ -872,15 +895,22 @@ function MemoryExplorer({
   activeTab,
   files,
   onFileChange,
+  onFileCreate,
+  onFileDelete,
   onReset,
 }: {
   activeTab: string;
   files: PackageFiles;
   onFileChange: (path: string, content: string) => void;
+  onFileCreate: (path: string, content: string) => string | null;
+  onFileDelete: (path: string) => void;
   onReset: () => void;
 }) {
   const [selectedPath, setSelectedPath] = React.useState(memoryTabPaths[activeTab] ?? "memory/semantic.json");
   const [query, setQuery] = React.useState("");
+  const [newPath, setNewPath] = React.useState("memory/custom-context.md");
+  const [newKind, setNewKind] = React.useState("memory");
+  const [createError, setCreateError] = React.useState("");
   const fileEntries = React.useMemo(
     () => Object.entries(files).sort(([left], [right]) => left.localeCompare(right)),
     [files],
@@ -891,6 +921,7 @@ function MemoryExplorer({
     return path.toLowerCase().includes(needle) || content.toLowerCase().includes(needle);
   });
   const selectedContent = files[selectedPath] ?? "";
+  const canDeleteSelected = fileEntries.length > 1 && files[selectedPath] !== undefined;
 
   React.useEffect(() => {
     const tabPath = memoryTabPaths[activeTab];
@@ -902,6 +933,35 @@ function MemoryExplorer({
       setSelectedPath(fileEntries[0][0]);
     }
   }, [activeTab, fileEntries, files, selectedPath]);
+
+  function createFile() {
+    const normalized = normalizePackageFilePath(newPath);
+    if (!normalized) {
+      setCreateError("Use a relative package path such as memory/customer-notes.md.");
+      return;
+    }
+    if (files[normalized] !== undefined) {
+      setCreateError(`${normalized} already exists.`);
+      setSelectedPath(normalized);
+      return;
+    }
+    const createdPath = onFileCreate(normalized, defaultPackageFileContent(normalized, newKind));
+    if (!createdPath) {
+      setCreateError("Could not create that package file.");
+      return;
+    }
+    setCreateError("");
+    setSelectedPath(createdPath);
+    setQuery("");
+  }
+
+  function deleteSelectedFile() {
+    if (!canDeleteSelected) return;
+    const currentIndex = fileEntries.findIndex(([path]) => path === selectedPath);
+    const fallback = fileEntries[currentIndex + 1]?.[0] ?? fileEntries[currentIndex - 1]?.[0] ?? fileEntries[0]?.[0];
+    onFileDelete(selectedPath);
+    if (fallback) setSelectedPath(fallback);
+  }
 
   return (
     <section className="memoryPanel">
@@ -929,6 +989,42 @@ function MemoryExplorer({
           <FileDown size={16} />
           Download file
         </button>
+      </div>
+      <div className="memoryCreateBar">
+        <label>
+          New package file
+          <input
+            value={newPath}
+            onChange={(event) => {
+              setNewPath(event.target.value);
+              setCreateError("");
+            }}
+            placeholder="memory/customer-notes.md"
+          />
+        </label>
+        <label>
+          Template
+          <select value={newKind} onChange={(event) => setNewKind(event.target.value)}>
+            <option value="memory">Memory note</option>
+            <option value="prompt">Prompt</option>
+            <option value="skill">Skill</option>
+            <option value="json">JSON</option>
+          </select>
+        </label>
+        <button className="primaryButton" onClick={createFile}>
+          <Plus size={16} />
+          Add file
+        </button>
+        <button
+          className="ghostButton"
+          disabled={!canDeleteSelected}
+          onClick={deleteSelectedFile}
+          title={canDeleteSelected ? `Remove ${selectedPath} from this package` : "Keep at least one package file"}
+        >
+          <Trash2 size={16} />
+          Delete selected
+        </button>
+        {createError && <p className="errorText memoryCreateError">{createError}</p>}
       </div>
       <div className="memoryWorkspace">
         <div className="memoryFileList">
@@ -2231,6 +2327,36 @@ function buildDefaultPackageFiles(): PackageFiles {
     "memory/procedural.yaml": "skills:\n  - id: code-review\n    when: validating implementation changes\n",
     "memory/social.yaml": "contacts:\n  - id: owner\n    relationship: primary-user\n",
   };
+}
+
+function normalizePackageFilePath(path: string) {
+  const normalized = path.trim().replace(/\\/g, "/").replace(/^\.\/+/, "");
+  if (!normalized) return "";
+  if (normalized.startsWith("/") || normalized.includes("://")) return "";
+  if (normalized.split("/").some((part) => part === "" || part === "." || part === "..")) return "";
+  if (!/^[A-Za-z0-9._/-]+$/.test(normalized)) return "";
+  return normalized;
+}
+
+function defaultPackageFileContent(path: string, kind: string) {
+  if (kind === "json" || path.endsWith(".json")) {
+    return JSON.stringify({ notes: [] }, null, 2);
+  }
+  if (kind === "skill" || path.startsWith("skills/")) {
+    const parts = path.split("/").filter(Boolean);
+    const id = parts.length > 1 ? parts[parts.length - 2] : parts[0]?.replace(/\.[^.]+$/, "") ?? "custom-skill";
+    return [`# ${titleize(id)}`, "", "Use this skill when the owner needs this packaged behavior.", ""].join("\n");
+  }
+  if (kind === "prompt" || path.startsWith("prompts/")) {
+    return [`# ${titleize(path.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "Prompt")}`, "", "Add reusable prompt context here.", ""].join("\n");
+  }
+  return ["# Memory Note", "", "- Add portable context that should travel with this agent.", ""].join("\n");
+}
+
+function titleize(value: string) {
+  return value
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function templateAgent(

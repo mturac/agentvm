@@ -67,6 +67,17 @@ try {
   memory = await page.getByLabel("Memory file editor").inputValue();
   assertIncludes(memory, "autosave survives reload", "autosaved memory");
 
+  await page.getByRole("button", { name: "Core Memory" }).click();
+  await page.getByLabel("New package file").fill("memory/customer-notes.md");
+  await page.getByLabel("Template").selectOption("memory");
+  await page.getByRole("button", { name: "Add file" }).click();
+  await page.locator(".memoryFile", { hasText: "memory/customer-notes.md" }).click();
+  const customMemory = await page.getByLabel("Memory file editor").inputValue();
+  assertIncludes(customMemory, "Add portable context", "custom memory template");
+  await page
+    .getByLabel("Memory file editor")
+    .fill("# Customer Notes\n\n- Custom package files travel with the browser bundle.\n");
+
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Package Brain" }).click();
   const download = await downloadPromise;
@@ -79,6 +90,11 @@ try {
     "packaged imported instructions",
   );
   assertIncludes(bundle.files?.["meta/import-source.json"], "openclaw", "packaged import metadata");
+  assertIncludes(
+    bundle.files?.["memory/customer-notes.md"],
+    "Custom package files travel",
+    "packaged custom memory file",
+  );
 
   await page
     .getByLabel("Memory file editor")
@@ -90,6 +106,14 @@ try {
   const packageButton = page.getByRole("button", { name: "Package Brain" });
   if (!(await packageButton.isDisabled())) {
     throw new Error("Package Brain should be disabled while Safety Scan has findings");
+  }
+
+  await page.getByRole("button", { name: "Delete selected" }).click();
+  await page.waitForTimeout(250);
+  const clearedSafetyText = await page.locator(".inspectorCard", { hasText: "Safety Scan" }).innerText();
+  assertIncludes(clearedSafetyText, "No secret-like content found", "safety finding cleared after deleting file");
+  if (await packageButton.isDisabled()) {
+    throw new Error("Package Brain should be enabled after deleting the unsafe custom file");
   }
 
   await page.getByRole("button", { name: "Reset Workspace" }).click();

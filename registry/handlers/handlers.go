@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/agentvm/agentvm/registry/models"
-	"github.com/agentvm/agentvm/registry/storage"
+	"github.com/mturac/agentvm/registry/models"
+	"github.com/mturac/agentvm/registry/storage"
 )
 
 type API struct {

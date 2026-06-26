@@ -6,13 +6,16 @@
 
 [![Spec Version](https://img.shields.io/badge/spec-v0.1.0-blue)](spec.md)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
+[![CI](https://github.com/mturac/agentvm/actions/workflows/ci.yml/badge.svg)](https://github.com/mturac/agentvm/actions/workflows/ci.yml)
 
 **Stop losing your AI agent when you switch platforms.**
 Package your agent's memory, personality, skills, and knowledge into a portable format that runs anywhere.
 
-[Quick Start](#quick-start) · [Specification](spec.md) · [Contributing](CONTRIBUTING.md)
+[Quick Start](#quick-start) · [Studio](#run-agentvm-studio) · [Specification](spec.md) · [Contributing](CONTRIBUTING.md)
 
 </div>
+
+![AgentVM Studio importing an OpenClaw agent and preparing a portable package](docs/assets/agentvm-studio.png)
 
 ---
 
@@ -45,6 +48,15 @@ identity:
 ```
 
 One agent. Every platform. Nothing lost.
+
+## What Ships Today
+
+- **Portable Agent Image spec** for identity, memory, skills, tools, prompts, runtime targets, provenance, and export metadata.
+- **Rust CLI** for `init`, `pack`, `unpack`, `validate`, `inspect`, `diff`, `merge`, `checksum`, platform import/export, memory search/export, skills, versioning, changelog, runtime dry-run, security scan, and local registry push/pull.
+- **AgentVM Studio** for no-YAML imports from ChatGPT, Claude, Gemini, OpenClaw, and Ollama, visual brain editing, packaged file management, Safety Scan blocking, diff/merge, platform exports, and local registry publishing.
+- **Go local registry API** with CORS controls, persistent file storage, and full image payload round-trips.
+- **TypeScript adapters** for OpenAI, Anthropic, Gemini, Ollama, and OpenClaw request composition.
+- **CI and local verification** covering Rust, Go, browser Studio, adapters, platform migrations, strict secret-like content scans, and registry round-trips.
 
 ---
 
@@ -83,7 +95,7 @@ AgentVM is currently a draft specification, Rust core and memory crates, a CLI f
 ### Develop From Source
 
 ```bash
-git clone https://github.com/agentvm/agentvm.git
+git clone https://github.com/mturac/agentvm.git
 cd agentvm
 cargo test --workspace
 ```
@@ -139,7 +151,7 @@ npm install
 npm run dev
 ```
 
-Open the printed Vite URL, choose a starter Agent Image, paste existing ChatGPT/Claude/Gemini/OpenClaw/Ollama instructions into the platform import wizard, or drop an Agent Image YAML/JSON file into the Studio. From there you can fix missing basics without hand-writing YAML, edit the portable brain visually, edit packaged memory files in the Memory Explorer, compare and merge another manifest in the Diff tab, preview/download platform export files, run the browser Safety Scan for secret-like content, download a browser `*.agentvm.json` bundle, unpack that bundle with the CLI, and publish/search/load it against a local registry API. The Studio autosaves the current browser workspace to local storage and provides a reset action for starting over.
+Open the printed Vite URL, choose a starter Agent Image, paste existing ChatGPT/Claude/Gemini/OpenClaw/Ollama instructions into the platform import wizard, or drop an Agent Image YAML/JSON file into the Studio. From there you can fix missing basics without hand-writing YAML, edit the portable brain visually, create/edit/delete packaged memory, prompt, skill, and context files in the Memory Explorer, compare and merge another manifest in the Diff tab, preview/download platform export files, run the browser Safety Scan for secret-like content, download a browser `*.agentvm.json` bundle, unpack that bundle with the CLI, and publish/search/load it against a local registry API. The Studio autosaves the current browser workspace to local storage and provides a reset action for starting over.
 
 Local registry publish stores the image manifest and text file payload, so pulled registry JSON can be unpacked back into an AgentVM image directory. The local API only grants browser CORS access to localhost origins.
 
@@ -149,7 +161,7 @@ Local registry publish stores the image manifest and text file payload, so pulle
 bash scripts/verify.sh
 ```
 
-The script runs Rust format/test/clippy, CLI package/export/import/runtime/security smoke, local registry CORS and full-payload push/pull/unpack validation, Go registry tests, Studio build, Studio browser smoke including Safety Scan blocking, and adapter tests.
+The script runs Rust format/test/clippy, CLI package/export/import/runtime/security smoke, local registry CORS and full-payload push/pull/unpack validation, Go registry tests, Studio build, Studio browser smoke including custom package files and Safety Scan blocking, and adapter tests.
 
 ### Build Platform Adapters
 
@@ -246,7 +258,7 @@ Key sections:
 ```
 ┌─────────────────────────────────────────────┐
 │                 USER LAYER                   │
-│     CLI  ·  Web UI  ·  HTTP API  ·  SDK     │
+│       CLI  ·  Studio  ·  Registry API        │
 └────────────────────┬────────────────────────┘
                      │
 ┌────────────────────┴────────────────────────┐
@@ -255,8 +267,9 @@ Key sections:
 └────────────────────┬────────────────────────┘
                      │
 ┌────────────────────┴────────────────────────┐
-│             RUNTIME ADAPTERS                 │
-│   OpenAI · Anthropic · Ollama · OpenClaw     │
+│             PLATFORM ADAPTERS                │
+│ OpenAI · Anthropic · Gemini · Ollama         │
+│ OpenClaw                                    │
 └────────────────────┬────────────────────────┘
                      │
 ┌────────────────────┴────────────────────────┐
@@ -286,7 +299,7 @@ We need help! Check out [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ### Good First Issues
 
-Look for issues tagged [`good-first-issue`](https://github.com/agentvm/agentvm/labels/good-first-issue):
+Look for issues tagged [`good-first-issue`](https://github.com/mturac/agentvm/labels/good-first-issue):
 
 1. **Export to Mistral** — Add another file-based platform exporter/importer pair
 2. **Agent template: Product Manager** — Create a product strategy template
@@ -301,7 +314,7 @@ Look for issues tagged [`good-first-issue`](https://github.com/agentvm/agentvm/l
 - [x] Spec v0.1.0 drafted
 - [x] Core library (Rust)
 - [x] CLI image management (`init`, `pack`, `unpack`, `validate`, `inspect`, `diff`, `export`, `skills`)
-- [x] Web Studio prototype with local autosave, starter templates, platform-local prompt import, drag-and-drop manifest import, packaged memory editing, platform export workspaces, Safety Scan blocking, and visual diff/merge
+- [x] Web Studio prototype with local autosave, starter templates, platform-local prompt import, drag-and-drop manifest import, packaged file creation/editing/deletion, platform export workspaces, Safety Scan blocking, and visual diff/merge
 - [x] Memory engine basics (`list`, `search`, `consolidate`, `export`)
 - [x] Image integrity and merge (`checksum`, `merge`)
 - [x] Platform adapters (OpenAI, Anthropic, Gemini, Ollama, OpenClaw)
@@ -323,7 +336,7 @@ See [spec.md § Roadmap](spec.md#12-roadmap) for detailed phases.
 
 ## Community
 
-- **RFC Discussions:** [github.com/agentvm/agentvm/discussions](https://github.com/agentvm/agentvm/discussions)
+- **RFC Discussions:** [github.com/mturac/agentvm/discussions](https://github.com/mturac/agentvm/discussions)
 
 ---
 
@@ -337,6 +350,6 @@ Apache 2.0. Use it however you want.
 
 **Built by developers who are tired of losing their agents.**
 
-[Star](https://github.com/agentvm/agentvm/stargazers) · [Fork](https://github.com/agentvm/agentvm/fork) · [Watch](https://github.com/agentvm/agentvm/watchers)
+[Star](https://github.com/mturac/agentvm/stargazers) · [Fork](https://github.com/mturac/agentvm/fork) · [Watch](https://github.com/mturac/agentvm/watchers)
 
 </div>
